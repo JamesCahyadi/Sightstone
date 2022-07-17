@@ -21,39 +21,9 @@ type Win32_Process struct {
 func Connect() (port string, password string, caCertPool *x509.CertPool) {
 	clientProcess := tryConnect()
 	clientInfo := clientProcess.Commandline
-
+	return getConnectionDetails(clientInfo)
 	// obtain port
-	portRegex, err := regexp.Compile("--app-port=([0-9]*)")
-	if err != nil {
-		panic("invalid port regex")
-	}
-	portRes := portRegex.FindStringSubmatch(clientInfo)
-	if len(portRes) != 2 {
-		panic("cannot find port")
-	}
-	port = portRes[1]
 
-	// obtain password
-	passwordRegex, err := regexp.Compile("--remoting-auth-token=([a-zA-Z0-9_-]*)")
-	if err != nil {
-		panic("invalid remoting auth token regex")
-	}
-	passwordRes := passwordRegex.FindStringSubmatch(clientInfo)
-	if len(passwordRes) != 2 {
-		panic("cannot find remoting auth token")
-	}
-	password = passwordRes[1]
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	caCertPool = x509.NewCertPool()
-	ok := caCertPool.AppendCertsFromPEM(caCert)
-	if !ok {
-		panic("cannot add certificate")
-	}
-
-	return port, password, caCertPool
 }
 
 func findLeagueClientProcess() *Win32_Process {
@@ -86,8 +56,42 @@ func tryConnect() *Win32_Process {
 			}
 		case <-quit:
 			ticker.Stop()
-			fmt.Println("connected!", clientProcess)
+			fmt.Println("connected!")
 			return clientProcess
 		}
 	}
+}
+
+func getConnectionDetails(clientInfo string) (port string, password string, caCertPool *x509.CertPool) {
+	portRegex, err := regexp.Compile("--app-port=([0-9]*)")
+	if err != nil {
+		panic("invalid port regex")
+	}
+	portRes := portRegex.FindStringSubmatch(clientInfo)
+	if len(portRes) != 2 {
+		panic("cannot find port")
+	}
+	port = portRes[1]
+
+	// obtain password
+	passwordRegex, err := regexp.Compile("--remoting-auth-token=([a-zA-Z0-9_-]*)")
+	if err != nil {
+		panic("invalid remoting auth token regex")
+	}
+	passwordRes := passwordRegex.FindStringSubmatch(clientInfo)
+	if len(passwordRes) != 2 {
+		panic("cannot find remoting auth token")
+	}
+	password = passwordRes[1]
+
+	if err != nil {
+		log.Fatal(err)
+	}
+	caCertPool = x509.NewCertPool()
+	ok := caCertPool.AppendCertsFromPEM(caCert)
+	if !ok {
+		panic("cannot add certificate")
+	}
+
+	return port, password, caCertPool
 }
