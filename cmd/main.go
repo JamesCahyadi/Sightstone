@@ -1,7 +1,6 @@
 package main
 
 import (
-	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,18 +24,10 @@ type Friend struct {
 	GameInfo     GameInfo `json:"lol"`
 }
 
-type LeagueClientRequest struct {
-	Port       string
-	Password   string
-	CaCertPool *x509.CertPool
-	BaseURL    string
-}
-
 func main() {
 	lc := client.LeagueClientConnect()
 
 	var friends []Friend
-
 	resp, err := lc.Do(http.MethodGet, "/lol-chat/v1/friends", nil)
 	if err != nil {
 		panic(err)
