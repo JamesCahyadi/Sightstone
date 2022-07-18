@@ -1,10 +1,13 @@
-package client_connect
+package client
 
 import (
+	"crypto/tls"
 	"crypto/x509"
 	_ "embed"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"regexp"
 	"time"
 
@@ -18,12 +21,41 @@ type Win32_Process struct {
 	Commandline string
 }
 
-func Connect() (port string, password string, caCertPool *x509.CertPool) {
+type LeagueClient struct {
+	BaseURL  string
+	Username string
+	Password string
+	Client   *http.Client
+}
+
+func (lc *LeagueClient) Do(method, endpoint string, body io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(method, lc.BaseURL+endpoint, body)
+	if err != nil {
+		panic(err)
+	}
+	req.SetBasicAuth(lc.Username, lc.Password)
+	return lc.Client.Do(req)
+}
+
+func LeagueClientConnect() *LeagueClient {
 	clientProcess := tryConnect()
 	clientInfo := clientProcess.Commandline
-	return getConnectionDetails(clientInfo)
-	// obtain port
+	port, password, caCertPool := getConnectionDetails(clientInfo)
 
+	client := &http.Client{
+		Transport: &http.Transport{
+			TLSClientConfig: &tls.Config{
+				RootCAs: caCertPool,
+			},
+		},
+	}
+
+	return &LeagueClient{
+		BaseURL:  "https://127.0.0.1:" + port,
+		Username: "riot",
+		Password: password,
+		Client:   client,
+	}
 }
 
 func findLeagueClientProcess() *Win32_Process {
@@ -50,13 +82,11 @@ func tryConnect() *Win32_Process {
 		select {
 		case <-ticker.C:
 			clientProcess = findLeagueClientProcess()
-			fmt.Println("retry connect..")
 			if clientProcess != nil {
 				close(quit)
 			}
 		case <-quit:
 			ticker.Stop()
-			fmt.Println("connected!")
 			return clientProcess
 		}
 	}

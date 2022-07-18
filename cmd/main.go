@@ -1,14 +1,14 @@
 package main
 
 import (
-	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 
-	"github.com/JamesCahyadi/Sightstone/pkg/client_connect"
+	"github.com/JamesCahyadi/Sightstone/pkg/client"
 )
 
 type GameInfo struct {
@@ -25,41 +25,32 @@ type Friend struct {
 	GameInfo     GameInfo `json:"lol"`
 }
 
-func main() {
-	port, password, caCertPool := client_connect.Connect()
-	baseURL := "https://127.0.0.1:" + port
+type LeagueClientRequest struct {
+	Port       string
+	Password   string
+	CaCertPool *x509.CertPool
+	BaseURL    string
+}
 
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs: caCertPool,
-			},
-		},
-	}
+func main() {
+	lc := client.LeagueClientConnect()
 
 	var friends []Friend
 
-	req, err := http.NewRequest(http.MethodGet, baseURL+"/lol-chat/v1/friends", nil)
+	resp, err := lc.Do(http.MethodGet, "/lol-chat/v1/friends", nil)
 	if err != nil {
 		panic(err)
 	}
-	req.SetBasicAuth("riot", password)
-	res, err := client.Do(req)
-	if err != nil {
-		panic(err)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer res.Body.Close()
+	defer resp.Body.Close()
 
+	fmt.Println(string(body))
 	err = json.Unmarshal(body, &friends)
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	fmt.Println(friends)
 
 }
