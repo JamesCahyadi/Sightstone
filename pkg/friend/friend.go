@@ -17,11 +17,11 @@ type GameInfo struct {
 }
 
 type Friend struct {
-	Id           string   `json:"id"`
-	GroupName    string   `json:"groupName"`
-	Availability string   `json:"availability"`
-	Name         string   `json:"name"`
-	GameInfo     GameInfo `json:"lol"`
+	Id             string   `json:"id"`
+	DisplayGroupId int      `json:"displayGroupId"`
+	Availability   string   `json:"availability"`
+	Name           string   `json:"name"`
+	GameInfo       GameInfo `json:"lol"`
 }
 
 type FriendGroup struct {
@@ -29,7 +29,7 @@ type FriendGroup struct {
 	Name string `json:"name"`
 }
 
-func FindGroup(lc *client.LeagueClient, target string) bool {
+func FindGroup(lc *client.LeagueClient, target string) int {
 	var friendGroups []FriendGroup
 	resp, err := lc.Do(http.MethodGet, "/lol-chat/v1/friend-groups", nil)
 	if err != nil {
@@ -48,14 +48,14 @@ func FindGroup(lc *client.LeagueClient, target string) bool {
 
 	for _, group := range friendGroups {
 		if target == strings.ToLower(group.Name) {
-			return true
+			return group.Id
 		}
 	}
 
-	return false
+	return -1
 }
 
-func GetFriendsFromGroup(lc *client.LeagueClient, target string) []Friend {
+func GetFriendsFromGroup(lc *client.LeagueClient, target int) []Friend {
 	var friends []Friend
 	// loop through all friends since lol-chat/v1/friend-groups/{id}/friend endpoint is not implemented
 	resp, err := lc.Do(http.MethodGet, "/lol-chat/v1/friends", nil)
@@ -75,7 +75,8 @@ func GetFriendsFromGroup(lc *client.LeagueClient, target string) []Friend {
 
 	var groupFriends []Friend
 	for _, friend := range friends {
-		if strings.ToLower(friend.GroupName) == target {
+		// DisplayGroupId is the only group field that seems to update without client refresh
+		if friend.DisplayGroupId == target {
 			groupFriends = append(groupFriends, friend)
 		}
 	}
