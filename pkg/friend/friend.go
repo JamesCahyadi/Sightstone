@@ -106,13 +106,14 @@ func Listen(lc *client.LeagueClient, groupId int, onlineFriends map[string]bool)
 	signal.Notify(interrupt, os.Interrupt)
 
 	go func() {
-		defer close(done)
 		for {
 			// the server sends a response which gets captured in this message
 			_, message, err := conn.ReadMessage()
 			if err != nil {
-				panic(err)
+				close(done)
+				return
 			}
+
 			processMessage(message, groupId, onlineFriends)
 		}
 	}()
