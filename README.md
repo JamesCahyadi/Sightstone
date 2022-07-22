@@ -2,7 +2,7 @@
 
 Sightstone is a project that notifies you when a friend comes online. Sightstone utilizes the League Client Update (LCU) API to determine the status of friends.
 
-## Scenario
+### Scenario
 
 You open League of Legends and none of your friends are online. You minimize the client and start watching Youtube videos. However, every 5 seconds you feel the urge to check if anyone is now online. With Sightstone, problem solved!
 
