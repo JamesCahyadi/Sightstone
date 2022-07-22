@@ -7,6 +7,7 @@ import (
 
 func Send(message string) {
 	_ = toast.Push(message,
+		toast.WithAppID(""),
 		toast.WithTitle("Sighstone"),
 		toast.WithIconRaw(assets.EmbededImage),
 	)
