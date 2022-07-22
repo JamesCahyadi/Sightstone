@@ -4,7 +4,6 @@ package connect
 import (
 	"crypto/x509"
 	_ "embed"
-	"fmt"
 	"log"
 	"regexp"
 	"time"
@@ -35,6 +34,7 @@ func Try() *Win32_Process {
 		case <-quit:
 			ticker.Stop()
 			time.Sleep(15 * time.Second) // wait a while for the client to finish loading
+			log.Println("ready to send alerts")
 			return clientProcess
 		}
 	}
@@ -86,6 +86,6 @@ func findLeagueClientProcess() *Win32_Process {
 	} else if len(dst) != 1 {
 		panic("found more than one league client open")
 	}
-	fmt.Println("found process", dst[0])
+	log.Println("found league client process")
 	return &(dst[0])
 }

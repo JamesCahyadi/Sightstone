@@ -143,7 +143,7 @@ func Listen(lc *client.LeagueClient, groupId int, onlineFriends map[string]bool)
 			case <-done:
 			case <-time.After(time.Second):
 			}
-			return
+			os.Exit(0)
 		}
 
 	}
@@ -193,10 +193,14 @@ func processMessage(msg []byte, groupId int, onlineFriends map[string]bool) {
 	if friend.Availability == "offline" || friend.Availability == "mobile" { // when a friend goes offline, remove them from the list
 		delete(onlineFriends, friend.Name)
 		alert.Send(fmt.Sprintf("%s just went offline :(", friend.Name))
+		log.Printf("Removing friend from onlineFriends: %+v", friend)
+
 	} else if friend.Availability == "dnd" { // if a user is in game
 		alert.Send(fmt.Sprintf("%s is currently in a game, we'll notify you once they are finished", friend.Name))
+
 	} else if !isFriendInOnlineFriends { // when a user comes online, add them to the list
 		onlineFriends[friend.Name] = true
 		alert.Send(fmt.Sprintf("%s is online! Go and invite them to your next game!", friend.Name))
+		log.Printf("Adding friend to onlineFriends: %+v", friend)
 	}
 }
