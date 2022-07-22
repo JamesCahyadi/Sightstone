@@ -184,7 +184,6 @@ func processMessage(msg []byte, groupId int, onlineFriends map[string]bool) {
 		// if we move a friend outside of our group, remove them from onlineFriends just for the sake of ensuring onlineFriends doesn't contain stale data
 		if isFriendInOnlineFriends {
 			delete(onlineFriends, friend.Name)
-			fmt.Println("removing  "+friend.Name+"... current onlineFriends are:", onlineFriends)
 		}
 		return
 	}

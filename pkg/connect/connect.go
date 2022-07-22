@@ -34,7 +34,7 @@ func Try() *Win32_Process {
 			}
 		case <-quit:
 			ticker.Stop()
-			time.Sleep(10 * time.Second) // wait a while for the client to finish loading
+			time.Sleep(15 * time.Second) // wait a while for the client to finish loading
 			return clientProcess
 		}
 	}
