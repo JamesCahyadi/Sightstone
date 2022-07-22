@@ -12,11 +12,10 @@ func main() {
 	// should check if the group exists or something
 	groupId := friend.FindGroup(lc, fg)
 	if groupId == -1 {
-		panic("Couldn't find group" + fg) // should keep listening until the group is created instead of just panicing
+		groupId = 0 // the default General group
 	}
 
 	onlineFriends := make(map[string]bool) // acts like a set, value isn't used
 	friend.InitialScan(lc, groupId, onlineFriends)
-	// friends := friend.GetFriendsFromGroup(lc, groupId)
 	friend.Listen(lc, groupId, onlineFriends)
 }
